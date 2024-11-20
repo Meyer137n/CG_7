@@ -45,10 +45,11 @@ namespace ComputerGraphics_Filters
 
         private void DrawHistogram(int[] histogram, PictureBox pictureBox)
         {
-            int width = 256 + 55; // Ширина гистограммы с учётом разметки
+            int width = 256 + 90; // Ширина гистограммы с учётом разметки
             int height = 500; // Полная высота для отображения гистограммы
             int paddingTop = 10; // Отступ сверху
             int paddingBottom = 10; // Отступ снизу
+            int barOffsetX = 70; // Отступ гистограммы от оси Y и процентов
 
             Bitmap histogramBitmap = new Bitmap(width, height);
             int totalPixels = histogram.Sum(); // Общее количество пикселей
@@ -75,10 +76,10 @@ namespace ComputerGraphics_Filters
                     double labelValue = i * tickStep; // Значение для текущей отметки
 
                     // Линия шкалы
-                    g.DrawLine(pen, 45, y, width - 10, y);
+                    g.DrawLine(pen, barOffsetX, y, width - 10, y);
 
                     // Текстовая разметка
-                    g.DrawString($"{labelValue:F1}%", font, brush, 5, y - 7);
+                    g.DrawString($"{labelValue:F4}%", font, brush, 5, y - 7); // Изменено на F4 для 4 знаков
                 }
 
                 // Рисуем столбцы гистограммы
@@ -86,7 +87,7 @@ namespace ComputerGraphics_Filters
                 {
                     int barHeight = (int)((percentages[i] / maxPercentage) * (height - paddingTop - paddingBottom)); // Высота относительно максимального процента
                     int barTop = height - paddingBottom - barHeight; // Верхняя точка столбца
-                    g.DrawLine(Pens.Black, i + 45, height - paddingBottom, i + 45, barTop); // Столбец от нижней границы вверх
+                    g.DrawLine(Pens.Black, i + barOffsetX, height - paddingBottom, i + barOffsetX, barTop); // Столбец от нижней границы вверх
                 }
             }
 
@@ -214,28 +215,72 @@ namespace ComputerGraphics_Filters
         {
             StartFilter(new GrayScaleFilter());
         }
-        
+
         private void Binarization_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int threshold = Convert.ToInt32(amountTextBox.Text); // Пороговое значение для бинаризации
+            if (!int.TryParse(amountTextBox.Text, out int threshold))
+            {
+                MessageBox.Show("Введите числовое значение для порога!");
+                return;
+            }
+
+            if (threshold < 0 || threshold > 255)
+            {
+                MessageBox.Show("Порог должен быть между 0 и 255 включительно!");
+                return;
+            }
+
             StartFilter(new BinarizationFilter(threshold));
         }
 
         private void IncreaseBrightness_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int amount = Convert.ToInt32(amountTextBox.Text);
+            if (!int.TryParse(amountTextBox.Text, out int amount))
+            {
+                MessageBox.Show("Введите числовое значение!");
+                return;
+            }
+
+            if (amount < 0 || amount > 255)
+            {
+                MessageBox.Show("Изменение должно быть между 0 и 255 включительно!");
+                return;
+            }
+
             StartFilter(new BrightnessFilter(amount));
         }
 
         private void DecreaseBrightness_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int amount = Convert.ToInt32(amountTextBox.Text);
+            if (!int.TryParse(amountTextBox.Text, out int amount))
+            {
+                MessageBox.Show("Введите числовое значение для уменьшения яркости!");
+                return;
+            }
+
+            if (amount < 0 || amount > 255)
+            {
+                MessageBox.Show("Изменение должно быть между 0 и 255 включительно!");
+                return;
+            }
+
             StartFilter(new BrightnessFilter(-amount));
         }
-        
+
         private void Contrast_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            double amount = Convert.ToDouble(amountTextBox.Text);
+            if (!double.TryParse(amountTextBox.Text, out double amount))
+            {
+                MessageBox.Show("Введите числовое значение для изменения контраста!");
+                return;
+            }
+
+            if (amount <= 0 || amount > 255)
+            {
+                MessageBox.Show("Изменение должно быть в пределах от 0 до 255 включительно!");
+                return;
+            }
+
             StartFilter(new ContrastFilter(amount));
         }
 
@@ -260,13 +305,47 @@ namespace ComputerGraphics_Filters
 
         private void Box_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int radius = Convert.ToInt32(amountTextBox.Text);
+            if (!int.TryParse(amountTextBox.Text, out int radius))
+            {
+                MessageBox.Show("Введите целое число для размера апертуры!");
+                return;
+            }
+
+            if (radius <= 1)
+            {
+                MessageBox.Show("Размер апертуры должен быть больше 1!");
+                return;
+            }
+
+            if (radius % 2 == 0)
+            {
+                MessageBox.Show("Размер апертуры должен быть нечётным!");
+                return;
+            }
+
             StartFilter(new BoxFilter(radius));
         }
 
         private void Gaussian_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int radius = Convert.ToInt32(amountTextBox.Text);
+            if (!int.TryParse(amountTextBox.Text, out int radius))
+            {
+                MessageBox.Show("Введите целое число для размера апертуры!");
+                return;
+            }
+
+            if (radius <= 1)
+            {
+                MessageBox.Show("Размер апертуры должен быть больше 1!");
+                return;
+            }
+
+            if (radius % 2 == 0)
+            {
+                MessageBox.Show("Размер апертуры должен быть нечётным!");
+                return;
+            }
+
             StartFilter(new GaussianFilter(radius));
         }
 
@@ -277,13 +356,35 @@ namespace ComputerGraphics_Filters
 
         private void Neighbor_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            double scale = Convert.ToDouble(amountTextBox.Text);
+            if (!double.TryParse(amountTextBox.Text, out double scale))
+            {
+                MessageBox.Show("Введите числовое значение для коэффициента масштабирования!");
+                return;
+            }
+
+            if (scale <= 0)
+            {
+                MessageBox.Show("Коэффициент масштабирования должен быть больше или равен 3!");
+                return;
+            }
+
             StartFilter(new NeighborFilter(scale));
         }
 
         private void Bilinear_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            double scale = Convert.ToDouble(amountTextBox.Text);
+            if (!double.TryParse(amountTextBox.Text, out double scale))
+            {
+                MessageBox.Show("Введите числовое значение для коэффициента масштабирования!");
+                return;
+            }
+
+            if (scale < 3)
+            {
+                MessageBox.Show("Коэффициент масштабирования должен быть больше или равен 3!");
+                return;
+            }
+
             StartFilter(new BilinearFilter(scale));
         }
     }

@@ -56,7 +56,6 @@ namespace ComputerGraphics_Filters
         {
             Color sourceColor = sourceImage.GetPixel(x, y);
             int Intensity = (int)(0.299 * sourceColor.R + 0.5876 * sourceColor.G + 0.114 * sourceColor.B);
-            Intensity = Clamp(Intensity, 0, 255);
             return Color.FromArgb(Intensity, Intensity, Intensity);
         }
     }
@@ -67,7 +66,7 @@ namespace ComputerGraphics_Filters
 
         public BinarizationFilter(int threshold)
         {
-            this.threshold = Clamp(threshold, 0, 255); // Убедимся, что порог в пределах [0, 255]
+            this.threshold = threshold; // Убедимся, что порог в пределах [0, 255]
         }
 
         protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
@@ -221,9 +220,6 @@ namespace ComputerGraphics_Filters
     {
         public BoxFilter(int aperture)
         {
-            if (aperture <= 1)
-                throw new ArgumentException("Размеры апертуры должны быть больше 0.");
-
             // Инициализируем ядро с пользовательскими размерами
             kernel = new double[aperture, aperture];
 
@@ -262,8 +258,6 @@ namespace ComputerGraphics_Filters
         public GaussianFilter(int radius)
         {
             double sigma = radius/3;
-            if (radius <= 0 || sigma <= 0)
-                throw new ArgumentException("Радиус и сигма должны быть больше 0.");
 
             int size = radius * 2 + 1; // Размер ядра
             kernel = new double[size, size];
@@ -506,8 +500,6 @@ namespace ComputerGraphics_Filters
 
         public NeighborFilter(double scale)
         {
-            if (scale <= 0)
-                throw new ArgumentException("Коэффициент должен быть больше 0.");
 
             this.scale = scale; // Устанавливаем коэффициент масштабирования
         }
@@ -554,9 +546,6 @@ namespace ComputerGraphics_Filters
 
         public BilinearFilter(double scale)
         {
-            if (scale <= 0)
-                throw new ArgumentException("Коэффициент должен быть больше 0.");
-
             this.scale = scale; // Устанавливаем коэффициент масштабирования
         }
 
@@ -635,8 +624,6 @@ namespace ComputerGraphics_Filters
 
         public BicubicFilter(double scale)
         {
-            if (scale <= 0)
-                throw new ArgumentException("Коэффициент масштабирования должен быть больше 0!");
             this.scale = scale; // Устанавливаем коэффициент масштабирования
         }
 
