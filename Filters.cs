@@ -62,28 +62,32 @@ namespace ComputerGraphics_Filters
     }
 
     public class BinarizationFilter : Filter
-{
-    private int threshold; // Пороговое значение для бинаризации
-
-    public BinarizationFilter(int threshold)
     {
-        this.threshold = Clamp(threshold, 0, 255); // Убедимся, что порог в пределах [0, 255]
+        private int threshold; // Пороговое значение для бинаризации
+
+        public BinarizationFilter(int threshold)
+        {
+            this.threshold = Clamp(threshold, 0, 255); // Убедимся, что порог в пределах [0, 255]
+        }
+
+        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        {
+            Color sourceColor = sourceImage.GetPixel(x, y);
+
+            // Рассчитываем интенсивность (яркость) пикселя
+            int intensity = (int)(0.299 * sourceColor.R + 0.5876 * sourceColor.G + 0.114 * sourceColor.B);
+
+            // Определяем, чёрный или белый пиксель
+            int binaryColor = 0;
+            if (intensity >= threshold)
+            {
+                binaryColor = 255;
+            }
+
+            // Возвращаем результат как чёрно-белый пиксель
+            return Color.FromArgb(binaryColor, binaryColor, binaryColor);
+        }
     }
-
-    protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
-    {
-        Color sourceColor = sourceImage.GetPixel(x, y);
-
-        // Рассчитываем интенсивность (яркость) пикселя
-        int intensity = (int)(0.299 * sourceColor.R + 0.5876 * sourceColor.G + 0.114 * sourceColor.B);
-
-        // Определяем, чёрный или белый пиксель
-        int binaryColor = intensity >= threshold ? 255 : 0;
-
-        // Возвращаем результат как чёрно-белый пиксель
-        return Color.FromArgb(binaryColor, binaryColor, binaryColor);
-    }
-}
 
     public class BrightnessFilter : Filter
     {
@@ -215,62 +219,89 @@ namespace ComputerGraphics_Filters
 
     public class BoxFilter : MatrixFilter
     {
-        private Rectangle processingArea; // Область обработки
-
-        public BoxFilter(int startX, int startY, int width, int height)
+        public BoxFilter(int aperture)
         {
-            int sizeX = 9;
-            int sizeY = 9;
-            kernel = new double[sizeX, sizeY];
-            for (int i = 0; i < sizeX; i++)
-                for (int j = 0; j < sizeY; j++)
-                    kernel[i, j] = 1.0 / (sizeX * sizeY);
+            if (aperture <= 1)
+                throw new ArgumentException("Размеры апертуры должны быть больше 0.");
 
-            // Устанавливаем область обработки
-            processingArea = new Rectangle(startX, startY, width, height);
+            // Инициализируем ядро с пользовательскими размерами
+            kernel = new double[aperture, aperture];
+
+            // Заполняем ядро равномерными коэффициентами
+            double value = 1.0 / (aperture * aperture); // Усреднение
+            for (int i = 0; i < aperture; i++)
+                for (int j = 0; j < aperture; j++)
+                    kernel[i, j] = value;
+        }
+
+        public override Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker, int MaxPercent = 100, int add = 0)
+        {
+            Bitmap resultImage = new Bitmap(sourceImage); // Копия исходного изображения
+
+            // Проходим по всему изображению
+            for (int x = 0; x < sourceImage.Width; x++)
+            {
+                // Отчет о прогрессе обработки
+                worker.ReportProgress((int)((double)x / sourceImage.Width * MaxPercent) + add);
+                if (worker.CancellationPending) // Проверяем, не отменена ли задача
+                    return null;
+
+                for (int y = 0; y < sourceImage.Height; y++)
+                {
+                    // Вычисляем новый цвет пикселя с помощью ядра фильтра
+                    resultImage.SetPixel(x, y, calculateNewPixelColor(sourceImage, x, y));
+                }
+            }
+
+            return resultImage; // Возвращаем обработанное изображение
+        }
+    }
+
+    public class GaussianFilter : MatrixFilter
+    {
+        public GaussianFilter(int radius)
+        {
+            double sigma = radius/3;
+            if (radius <= 0 || sigma <= 0)
+                throw new ArgumentException("Радиус и сигма должны быть больше 0.");
+
+            int size = radius * 2 + 1; // Размер ядра
+            kernel = new double[size, size];
+            double norm = 0;
+
+            // Заполняем ядро значениями гауссовой функции
+            for (int i = -radius; i <= radius; i++)
+            {
+                for (int j = -radius; j <= radius; j++)
+                {
+                    kernel[i + radius, j + radius] = Math.Exp(-(i * i + j * j) / (2 * sigma * sigma));
+                    norm += kernel[i + radius, j + radius];
+                }
+            }
+
+            // Нормализация ядра
+            for (int i = 0; i < size; i++)
+                for (int j = 0; j < size; j++)
+                    kernel[i, j] /= norm;
         }
 
         public override Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker, int MaxPercent = 100, int add = 0)
         {
             Bitmap resultImage = new Bitmap(sourceImage);
 
-            // Обрабатываем только пиксели в указанной области
-            for (int x = processingArea.Left; x < processingArea.Right && x < sourceImage.Width; x++)
+            for (int x = 0; x < sourceImage.Width; x++)
             {
-                worker.ReportProgress((int)((double)(x - processingArea.Left) / processingArea.Width * MaxPercent) + add);
+                worker.ReportProgress((int)((double)x / sourceImage.Width * MaxPercent) + add);
                 if (worker.CancellationPending)
                     return null;
 
-                for (int y = processingArea.Top; y < processingArea.Bottom && y < sourceImage.Height; y++)
+                for (int y = 0; y < sourceImage.Height; y++)
                 {
                     resultImage.SetPixel(x, y, calculateNewPixelColor(sourceImage, x, y));
                 }
             }
 
             return resultImage;
-        }
-    }
-
-    public class GaussianFilter : MatrixFilter
-    {
-        public GaussianFilter(int startX, int startY, int width, int height)
-        {
-            double sigma = 2;
-            int radius = 3;
-            int size = radius * 2 + 1;
-            kernel = new double[size, size];
-            double norm = 0;
-            for (int i = -radius; i <= radius; i++)
-            {
-                for (int j = -radius; j <= radius; j++)
-                {
-                    kernel[i + radius, j + radius] = Math.Exp(-(i * i + j * j) / (sigma * sigma));
-                    norm += kernel[i + radius, j + radius];
-                }
-            }
-            for (int i = 0; i < size; i++)
-                for (int j = 0; j < size; j++)
-                    kernel[i, j] /= norm;
         }
     }
 
@@ -307,6 +338,34 @@ namespace ComputerGraphics_Filters
                 return Color.Black; // Черный шум
             else
                 return sourceImage.GetPixel(x, y); // Оригинальный пиксель
+        }
+    }
+
+    public class NoiseGaussianFilter : Filter
+    {
+        private readonly Random random = new Random();
+        private readonly double mean;    // Среднее значение (μ)
+        private readonly double stdDev; // Стандартное отклонение (σ)
+
+        public NoiseGaussianFilter(double mean = 0, double stdDev = 10)
+        {
+            this.mean = mean;
+            this.stdDev = stdDev;
+        }
+
+        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        {
+            Color color = sourceImage.GetPixel(x, y);
+
+            // Генерация случайного значения с нормальным распределением (Box-Muller Transform)
+            double noise = mean + stdDev * Math.Sqrt(-2.0 * Math.Log(random.NextDouble())) * Math.Cos(2.0 * Math.PI * random.NextDouble());
+
+            // Добавляем шум к каждому каналу
+            int r = Clamp((int)(color.R + noise), 0, 255);
+            int g = Clamp((int)(color.G + noise), 0, 255);
+            int b = Clamp((int)(color.B + noise), 0, 255);
+
+            return Color.FromArgb(r, g, b);
         }
     }
 
@@ -441,55 +500,6 @@ namespace ComputerGraphics_Filters
         }
     }
 
-
-    public class ScalingFilter : Filter
-    {
-        private readonly int scaleFactor; // Коэффициент масштабирования (целое число)
-
-        public ScalingFilter(int scaleFactor)
-        {
-            if (scaleFactor <= 0)
-                throw new ArgumentException("Коэффициент масштабирования должен быть больше 0!");
-
-            this.scaleFactor = scaleFactor;
-        }
-
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
-        {
-            // Не используется, так как масштабирование не выполняется по пикселю
-            throw new NotImplementedException();
-        }
-
-        public override Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker, int MaxPercent = 100, int add = 0)
-        {
-            // Размеры результирующего изображения
-            int newWidth = sourceImage.Width * scaleFactor;
-            int newHeight = sourceImage.Height * scaleFactor;
-
-            // Создаем новое изображение
-            Bitmap scaledImage = new Bitmap(newWidth, newHeight);
-
-            for (int x = 0; x < newWidth; x++)
-            {
-                worker.ReportProgress((int)((double)x / newWidth * MaxPercent) + add);
-                if (worker.CancellationPending)
-                    return null;
-
-                for (int y = 0; y < newHeight; y++)
-                {
-                    // Находим пиксель в исходном изображении
-                    int srcX = x / scaleFactor;
-                    int srcY = y / scaleFactor;
-
-                    // Устанавливаем цвет из исходного пикселя
-                    scaledImage.SetPixel(x, y, sourceImage.GetPixel(srcX, srcY));
-                }
-            }
-
-            return scaledImage;
-        }
-    }
-
     public class NeighborFilter : Filter
     {
         private readonly double scale; // Коэффициент масштабирования
@@ -497,43 +507,44 @@ namespace ComputerGraphics_Filters
         public NeighborFilter(double scale)
         {
             if (scale <= 0)
-                throw new ArgumentException("Scale must be greater than 0.");
+                throw new ArgumentException("Коэффициент должен быть больше 0.");
 
-            this.scale = scale;
+            this.scale = scale; // Устанавливаем коэффициент масштабирования
         }
 
+        // Метод расчета нового цвета не используется в этом фильтре
         protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
-            // Этот метод не используется, так как ближайшие соседи обрабатываются глобально
             throw new NotImplementedException();
         }
 
         public override Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker, int MaxPercent = 100, int add = 0)
         {
-            // Размеры результирующего изображения
+            // Вычисляем размеры результирующего изображения
             int newWidth = (int)(sourceImage.Width * scale);
             int newHeight = (int)(sourceImage.Height * scale);
 
-            Bitmap resultImage = new Bitmap(newWidth, newHeight);
+            Bitmap resultImage = new Bitmap(newWidth, newHeight); // Создаем новое изображение
 
+            // Проходим по всем пикселям нового изображения
             for (int x = 0; x < newWidth; x++)
             {
-                worker.ReportProgress((int)((double)x / newWidth * MaxPercent) + add);
+                worker.ReportProgress((int)((double)x / newWidth * MaxPercent) + add); // Обновление прогресса
                 if (worker.CancellationPending)
                     return null;
 
                 for (int y = 0; y < newHeight; y++)
                 {
-                    // Находим координаты ближайшего соседа в исходном изображении
+                    // Находим ближайший пиксель в исходном изображении
                     int srcX = Clamp((int)(x / scale), 0, sourceImage.Width - 1);
                     int srcY = Clamp((int)(y / scale), 0, sourceImage.Height - 1);
 
-                    // Устанавливаем цвет пикселя из ближайшего соседа
+                    // Устанавливаем цвет пикселя из исходного изображения
                     resultImage.SetPixel(x, y, sourceImage.GetPixel(srcX, srcY));
                 }
             }
 
-            return resultImage;
+            return resultImage; // Возвращаем масштабированное изображение
         }
     }
 
@@ -544,47 +555,49 @@ namespace ComputerGraphics_Filters
         public BilinearFilter(double scale)
         {
             if (scale <= 0)
-                throw new ArgumentException("Scale must be greater than 0.");
+                throw new ArgumentException("Коэффициент должен быть больше 0.");
 
-            this.scale = scale;
+            this.scale = scale; // Устанавливаем коэффициент масштабирования
         }
 
+        // Метод расчета нового цвета не используется в этом фильтре
         protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
-            // Этот метод не используется, так как интерполяция обрабатывается глобально
             throw new NotImplementedException();
         }
 
         public override Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker, int MaxPercent = 100, int add = 0)
         {
-            // Размеры результирующего изображения
+            // Вычисляем размеры результирующего изображения
             int newWidth = (int)(sourceImage.Width * scale);
             int newHeight = (int)(sourceImage.Height * scale);
 
-            Bitmap resultImage = new Bitmap(newWidth, newHeight);
+            Bitmap resultImage = new Bitmap(newWidth, newHeight); // Создаем новое изображение
 
+            // Проходим по всем пикселям нового изображения
             for (int x = 0; x < newWidth; x++)
             {
-                worker.ReportProgress((int)((double)x / newWidth * MaxPercent) + add);
+                worker.ReportProgress((int)((double)x / newWidth * MaxPercent) + add); // Обновление прогресса
                 if (worker.CancellationPending)
                     return null;
 
                 for (int y = 0; y < newHeight; y++)
                 {
-                    // Преобразование координат в исходное изображение
+                    // Преобразуем координаты в исходное изображение
                     double srcX = x / scale;
                     double srcY = y / scale;
 
+                    // Находим координаты соседних пикселей
                     int x1 = Clamp((int)Math.Floor(srcX), 0, sourceImage.Width - 1);
                     int y1 = Clamp((int)Math.Floor(srcY), 0, sourceImage.Height - 1);
                     int x2 = Clamp(x1 + 1, 0, sourceImage.Width - 1);
                     int y2 = Clamp(y1 + 1, 0, sourceImage.Height - 1);
 
-                    // Доли отступов
+                    // Рассчитываем отступы для интерполяции
                     double dx = srcX - x1;
                     double dy = srcY - y1;
 
-                    // Значения цветов для соседних пикселей
+                    // Берем значения цветов соседних пикселей
                     Color c11 = sourceImage.GetPixel(x1, y1);
                     Color c12 = sourceImage.GetPixel(x1, y2);
                     Color c21 = sourceImage.GetPixel(x2, y1);
@@ -597,13 +610,14 @@ namespace ComputerGraphics_Filters
                     // Интерполяция по оси Y
                     Color c = InterpolateColor(c1, c2, dy);
 
-                    resultImage.SetPixel(x, y, c);
+                    resultImage.SetPixel(x, y, c); // Устанавливаем рассчитанный цвет
                 }
             }
 
-            return resultImage;
+            return resultImage; // Возвращаем масштабированное изображение
         }
 
+        // Метод для линейной интерполяции между двумя цветами
         private Color InterpolateColor(Color c1, Color c2, double t)
         {
             int r = (int)(c1.R + t * (c2.R - c1.R));
@@ -614,7 +628,7 @@ namespace ComputerGraphics_Filters
         }
     }
 
-
+    // Класс для масштабирования методом бикубической интерполяции (заготовка)
     public class BicubicFilter : Filter
     {
         private readonly double scale; // Коэффициент масштабирования
@@ -623,12 +637,12 @@ namespace ComputerGraphics_Filters
         {
             if (scale <= 0)
                 throw new ArgumentException("Коэффициент масштабирования должен быть больше 0!");
-            this.scale = scale;
+            this.scale = scale; // Устанавливаем коэффициент масштабирования
         }
 
+        // Метод расчета нового цвета не используется в этом фильтре
         protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
-            // Этот метод не используется, так как интерполяция выполняется глобально
             throw new NotImplementedException();
         }
     }

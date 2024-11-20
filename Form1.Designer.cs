@@ -45,11 +45,11 @@ namespace ComputerGraphics_Filters
             this.binarization_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.increaseBrightness_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.decreaseBrightness_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.increase_contrast_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.decrease_contrast_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contrast_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
             this.filters_lr6_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.noiseDots_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.noiseGauss_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.noiseLines_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.noiseCircles_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.box_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -147,8 +147,7 @@ namespace ComputerGraphics_Filters
             this.binarization_ToolStripMenuItem,
             this.increaseBrightness_ToolStripMenuItem,
             this.decreaseBrightness_ToolStripMenuItem,
-            this.increase_contrast_ToolStripMenuItem,
-            this.decrease_contrast_ToolStripMenuItem});
+            this.contrast_ToolStripMenuItem});
             this.filters_lr5_ToolStripMenuItem.Name = "filters_lr5_ToolStripMenuItem";
             this.filters_lr5_ToolStripMenuItem.Size = new System.Drawing.Size(85, 24);
             this.filters_lr5_ToolStripMenuItem.Text = "Фильтры ЛР5";
@@ -188,24 +187,18 @@ namespace ComputerGraphics_Filters
             this.decreaseBrightness_ToolStripMenuItem.Text = "Уменьшить яркость";
             this.decreaseBrightness_ToolStripMenuItem.Click += new System.EventHandler(this.DecreaseBrightness_ToolStripMenuItem_Click);
             // 
-            // increase_contrast_ToolStripMenuItem
+            // contrast_ToolStripMenuItem
             // 
-            this.increase_contrast_ToolStripMenuItem.Name = "contrast_ToolStripMenuItem";
-            this.increase_contrast_ToolStripMenuItem.Size = new System.Drawing.Size(347, 26);
-            this.increase_contrast_ToolStripMenuItem.Text = "Повысить контрастность";
-            this.increase_contrast_ToolStripMenuItem.Click += new System.EventHandler(this.IncreaseContrast_ToolStripMenuItem_Click);
-            // 
-            // decrease_contrast_ToolStripMenuItem
-            // 
-            this.decrease_contrast_ToolStripMenuItem.Name = "contrast_ToolStripMenuItem";
-            this.decrease_contrast_ToolStripMenuItem.Size = new System.Drawing.Size(347, 26);
-            this.decrease_contrast_ToolStripMenuItem.Text = "Понизить контрастность";
-            this.decrease_contrast_ToolStripMenuItem.Click += new System.EventHandler(this.DecreaseContrast_ToolStripMenuItem_Click);
+            this.contrast_ToolStripMenuItem.Name = "contrast_ToolStripMenuItem";
+            this.contrast_ToolStripMenuItem.Size = new System.Drawing.Size(347, 26);
+            this.contrast_ToolStripMenuItem.Text = "Изменить контрастность";
+            this.contrast_ToolStripMenuItem.Click += new System.EventHandler(this.Contrast_ToolStripMenuItem_Click);
             // 
             // filters_lr6_ToolStripMenuItem
             // 
             this.filters_lr6_ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.noiseDots_ToolStripMenuItem,
+            this.noiseGauss_ToolStripMenuItem,
             this.noiseLines_ToolStripMenuItem,
             this.noiseCircles_ToolStripMenuItem,
             this.box_ToolStripMenuItem,
@@ -221,6 +214,13 @@ namespace ComputerGraphics_Filters
             this.noiseDots_ToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
             this.noiseDots_ToolStripMenuItem.Text = "Шум \"точки\"";
             this.noiseDots_ToolStripMenuItem.Click += new System.EventHandler(this.NoiseDots_ToolStripMenuItem_Click);
+            // 
+            // noiseGauss_ToolStripMenuItem
+            // 
+            this.noiseGauss_ToolStripMenuItem.Name = "noiseGauss_ToolStripMenuItem";
+            this.noiseGauss_ToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
+            this.noiseGauss_ToolStripMenuItem.Text = "Гауссов шум";
+            this.noiseGauss_ToolStripMenuItem.Click += new System.EventHandler(this.NoiseGauss_ToolStripMenuItem_Click);
             // 
             // noiseLines_ToolStripMenuItem
             // 
@@ -247,7 +247,7 @@ namespace ComputerGraphics_Filters
             // 
             this.gaussian_ToolStripMenuItem.Name = "gaussian_ToolStripMenuItem";
             this.gaussian_ToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
-            this.gaussian_ToolStripMenuItem.Text = "Размытие Гаусса";
+            this.gaussian_ToolStripMenuItem.Text = "Шумоподавление Гаусса";
             this.gaussian_ToolStripMenuItem.Click += new System.EventHandler(this.Gaussian_ToolStripMenuItem_Click);
             // 
             // waves_ToolStripMenuItem
@@ -426,14 +426,14 @@ namespace ComputerGraphics_Filters
         private System.Windows.Forms.ToolStripMenuItem binarization_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem increaseBrightness_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem decreaseBrightness_ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem increase_contrast_ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem decrease_contrast_ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem contrast_ToolStripMenuItem;
 
         private System.Windows.Forms.ToolStripMenuItem filters_lr6_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem box_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gaussian_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem waves_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem noiseDots_ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem noiseGauss_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem noiseLines_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem noiseCircles_ToolStripMenuItem;
 

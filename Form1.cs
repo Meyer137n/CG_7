@@ -46,7 +46,7 @@ namespace ComputerGraphics_Filters
         private void DrawHistogram(int[] histogram, PictureBox pictureBox)
         {
             int width = 256 + 55; // Ширина гистограммы с учётом разметки
-            int height = 540; // Полная высота для отображения гистограммы
+            int height = 500; // Полная высота для отображения гистограммы
             int paddingTop = 10; // Отступ сверху
             int paddingBottom = 10; // Отступ снизу
 
@@ -55,32 +55,36 @@ namespace ComputerGraphics_Filters
 
             // Преобразуем значения в проценты
             double[] percentages = histogram.Select(value => (double)value / totalPixels * 100).ToArray();
+            double maxPercentage = percentages.Max(); // Находим максимальный процент
 
             using (Graphics g = Graphics.FromImage(histogramBitmap))
             {
                 g.Clear(Color.White); // Заливаем фон белым цветом
 
                 // Рисуем шкалу оси Y
-                int numberOfTicks = 20; // Количество отметок на оси Y
+                int numberOfTicks = 10; // Количество отметок на оси Y
+                double tickStep = maxPercentage / numberOfTicks; // Шаг между отметками
+                int tickHeight = (height - paddingTop - paddingBottom) / numberOfTicks; // Высота между линиями шкалы
                 Font font = new Font("Arial", 10); // Шрифт для текста
                 Brush brush = Brushes.Black;
                 Pen pen = new Pen(Color.Gray, 1);
+
                 for (int i = 0; i <= numberOfTicks; i++)
                 {
-                    int y = height - paddingBottom - (i * (height - paddingTop - paddingBottom) / numberOfTicks);
-                    int labelValue = i * 5; // Шаг в процентах (0, 20, 40, ..., 100)
+                    int y = height - paddingBottom - i * tickHeight; // Равномерное размещение линий
+                    double labelValue = i * tickStep; // Значение для текущей отметки
 
                     // Линия шкалы
                     g.DrawLine(pen, 45, y, width - 10, y);
 
                     // Текстовая разметка
-                    g.DrawString(labelValue.ToString() + "%", font, brush, 5, y - 7);
+                    g.DrawString($"{labelValue:F1}%", font, brush, 5, y - 7);
                 }
 
                 // Рисуем столбцы гистограммы
                 for (int i = 0; i < percentages.Length; i++)
                 {
-                    int barHeight = (int)(percentages[i] / 100 * (height - paddingTop - paddingBottom)); // Нормализуем высоту столбцов
+                    int barHeight = (int)((percentages[i] / maxPercentage) * (height - paddingTop - paddingBottom)); // Высота относительно максимального процента
                     int barTop = height - paddingBottom - barHeight; // Верхняя точка столбца
                     g.DrawLine(Pens.Black, i + 45, height - paddingBottom, i + 45, barTop); // Столбец от нижней границы вверх
                 }
@@ -229,21 +233,19 @@ namespace ComputerGraphics_Filters
             StartFilter(new BrightnessFilter(-amount));
         }
         
-        private void IncreaseContrast_ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void Contrast_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             double amount = Convert.ToDouble(amountTextBox.Text);
             StartFilter(new ContrastFilter(amount));
         }
 
-        private void DecreaseContrast_ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-           double amount = Convert.ToDouble(amountTextBox.Text);
-            StartFilter(new ContrastFilter(1/amount));
-        }
         private void NoiseDots_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            double amount = Convert.ToDouble(amountTextBox.Text);
             StartFilter(new NoiseDotsFilter());
+        }
+        private void NoiseGauss_ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StartFilter(new NoiseGaussianFilter());
         }
         private void NoiseCircles_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -258,16 +260,14 @@ namespace ComputerGraphics_Filters
 
         private void Box_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            String setting = amountTextBox.Text;
-            String[] parts = setting.Split('_');
-            StartFilter(new BoxFilter(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));
+            int radius = Convert.ToInt32(amountTextBox.Text);
+            StartFilter(new BoxFilter(radius));
         }
 
         private void Gaussian_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            String setting = amountTextBox.Text;
-            String[] parts = setting.Split('_');
-            StartFilter(new GaussianFilter(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));
+            int radius = Convert.ToInt32(amountTextBox.Text);
+            StartFilter(new GaussianFilter(radius));
         }
 
         private void Waves_ToolStripMenuItem_Click(object sender, EventArgs e)
