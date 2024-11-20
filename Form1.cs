@@ -349,6 +349,23 @@ namespace ComputerGraphics_Filters
             StartFilter(new GaussianFilter(radius));
         }
 
+        private void Sharpness_ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!int.TryParse(amountTextBox.Text, out int scale))
+            {
+                MessageBox.Show("Введите числовое значение для коэффициента масштабирования!");
+                return;
+            }
+
+            if (scale < 2)
+            {
+                MessageBox.Show("Коэффициент масштабирования должен быть больше или равен 3!");
+                return;
+            }
+
+            StartFilter(new SharpnessFilter(scale));
+        }
+
         private void Waves_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             StartFilter(new WavesFilter());

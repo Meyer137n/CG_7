@@ -299,6 +299,17 @@ namespace ComputerGraphics_Filters
         }
     }
 
+    public class SharpnessFilter : MatrixFilter
+    {
+        public SharpnessFilter(int k)
+        {
+            kernel = new double[3, 3] {
+                { -k/8, -k/8, -k/8 },
+                { -k/8, 1+k, -k/8 },
+                { -k/8, -k/8, -k/8 } };
+        }
+    }
+
     public class WavesFilter : Filter
     {
         protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)

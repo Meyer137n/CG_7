@@ -54,6 +54,7 @@ namespace ComputerGraphics_Filters
             this.noiseCircles_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.box_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gaussian_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sharpness_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.waves_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
             this.filters_lr7_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -203,7 +204,8 @@ namespace ComputerGraphics_Filters
             this.noiseCircles_ToolStripMenuItem,
             this.box_ToolStripMenuItem,
             this.gaussian_ToolStripMenuItem,
-            this.waves_ToolStripMenuItem});
+            this.waves_ToolStripMenuItem,
+            this.sharpness_ToolStripMenuItem});
             this.filters_lr6_ToolStripMenuItem.Name = "filters_lr6_ToolStripMenuItem";
             this.filters_lr6_ToolStripMenuItem.Size = new System.Drawing.Size(85, 24);
             this.filters_lr6_ToolStripMenuItem.Text = "Фильтры ЛР6";
@@ -249,6 +251,13 @@ namespace ComputerGraphics_Filters
             this.gaussian_ToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
             this.gaussian_ToolStripMenuItem.Text = "Шумоподавление Гаусса";
             this.gaussian_ToolStripMenuItem.Click += new System.EventHandler(this.Gaussian_ToolStripMenuItem_Click);
+            // 
+            // sharpness_ToolStripMenuItem
+            // 
+            this.sharpness_ToolStripMenuItem.Name = "sharpness_ToolStripMenuItem";
+            this.sharpness_ToolStripMenuItem.Size = new System.Drawing.Size(160, 26);
+            this.sharpness_ToolStripMenuItem.Text = "Резкость";
+            this.sharpness_ToolStripMenuItem.Click += new System.EventHandler(this.Sharpness_ToolStripMenuItem_Click);
             // 
             // waves_ToolStripMenuItem
             // 
@@ -432,6 +441,7 @@ namespace ComputerGraphics_Filters
         private System.Windows.Forms.ToolStripMenuItem box_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gaussian_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem waves_ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sharpness_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem noiseDots_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem noiseGauss_ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem noiseLines_ToolStripMenuItem;
