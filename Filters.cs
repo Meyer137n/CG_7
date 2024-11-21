@@ -627,21 +627,4 @@ namespace ComputerGraphics_Filters
             return Color.FromArgb(Clamp(r, 0, 255), Clamp(g, 0, 255), Clamp(b, 0, 255));
         }
     }
-
-    // Класс для масштабирования методом бикубической интерполяции (заготовка)
-    public class BicubicFilter : Filter
-    {
-        private readonly double scale; // Коэффициент масштабирования
-
-        public BicubicFilter(double scale)
-        {
-            this.scale = scale; // Устанавливаем коэффициент масштабирования
-        }
-
-        // Метод расчета нового цвета не используется в этом фильтре
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
-        {
-            throw new NotImplementedException();
-        }
-    }
 }
